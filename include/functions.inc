@@ -171,7 +171,16 @@ function verify_ssh_keys($string) {
 
 function get_ssh_keys($string) {
     $results = [];
-    if (preg_match_all('@(ssh-(?:rsa|dss) ([^\s]+) ([^\s]*))@', $string, $matches, PREG_SET_ORDER)) {
+    $supportedTypes = [
+        'ssh-dss',
+        'ssh-rsa',
+        'ssh-ed25519',
+        'ecdsa-sha2-nistp256',
+        'sk-ssh-ed25519@openssh\.com',
+        'sk-ecdsa-sha2-nistp256@openssh\.com',
+    ];
+    $pattern = '/((?:' . implode('|', $supportedTypes) . ') ([^\s]+) ([^\s]*))/';
+    if (preg_match_all($pattern, $string, $matches, PREG_SET_ORDER) >= 1) {
         foreach ($matches as $match) {
             $results[] = ['key'  => $match[1],
                                'name' => $match[3]];
